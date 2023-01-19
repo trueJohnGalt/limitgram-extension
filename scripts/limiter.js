@@ -1,35 +1,51 @@
 MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 
 const observer = new MutationObserver(() => {
-  // remove "explore" tab
-  document.querySelector('a[href="/explore/"]')?.parentNode?.remove();
 
-  // remove "search", "likes", "upload" tabs
-  document.querySelectorAll('a[href="#"]').forEach(tab => tab?.parentNode?.remove());
+    chrome.storage.sync.get(["hideExploreTab", "hideReelsTab", "hideSearchTab", "hideNotificationsTab", "hideCreateTab", "hidePosts", "hideSuggestions"],
+        function (result) {
+            var hideExploreTab = result.hideExploreTab;
+            var hideReelsTab = result.hideReelsTab;
+            var hideSearchTab = result.hideSearchTab;
+            var hideNotificationsTab = result.hideNotificationsTab;
+            var hideCreateTab = result.hideCreateTab;
+            var hidePosts = result.hidePosts;
+            var hideSuggestions = result.hideSuggestions;
 
-  // remove "reels" tab
-  document.querySelector('a[href="/reels/videos/"]')?.parentNode?.remove();
-
-  // remove "suggestions" section
-  document.querySelector('div._aak6')?.remove();
-
-    // remove posts
-  document.querySelectorAll('article').forEach(article => article?.remove());
-
-    // remove "caught up" section
-  document.querySelector('div._ab6k')?.remove();
-
-  // remove content if inside "explore" tab
-  if (window.location.href.match(/\/explore\//)) {
-    document.querySelector('main[role="main"]')?.remove();
-  }
-
-  if (window.location.href === "https://www.instagram.com/") {
-    window.location.replace("https://www.instagram.com/direct/inbox/");
-  }
+            if (hideExploreTab === true) {
+                removeElementsWithText("Explore");
+                if (window.location.href.match(/\/explore\//)) {
+                    document.querySelector('main[role="main"]')?.remove();
+                }
+            }
+            if (hideReelsTab === true) {
+                removeElementsWithText("Reels");
+            }
+            if (hideSearchTab === true) {
+                removeElementsWithText("Search");
+            }
+            if (hideNotificationsTab === true) {
+                removeElementsWithText("Notifications");
+            }
+            if (hideCreateTab === true) {
+                removeElementsWithText("Create");
+            }
+            if (hidePosts === true) {
+                document.querySelectorAll('article').forEach(article => article?.remove());
+            }
+            if (hideSuggestions === true) {
+                document.querySelector('div._aak6')?.remove();
+            }
+        });
 });
 
+function removeElementsWithText(str, tag = 'a') {
+    return Array.prototype.slice.call(document.getElementsByTagName(tag))
+        .filter(el => el.textContent.trim() === str.trim())
+        .forEach(element => element?.remove());
+}
+
 observer.observe(document, {
-  subtree: true,
-  attributes: true,
+    subtree: true,
+    attributes: true,
 });
